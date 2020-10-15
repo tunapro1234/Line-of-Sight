@@ -1,6 +1,7 @@
 from lineofsight.lib.node import Node
 from lineofsight.lib.edge import Edge
 from lineofsight.res.glob import *
+import numpy as np
 import pygame
 
 
@@ -32,42 +33,6 @@ class Board:
 
                 self.nodes[x, y] = Node(state, start_pos, self.pixel_size)
 
-        self.__calc_edges()
-
-    def __draw_nodes(self):
-        for x in range(self.px_num):
-            for y in range(self.py_num):
-                self.nodes[x, y].draw(self.screen)
-
-    def __draw_grid(self, color=colors.white):
-        for x in range(self.px_num + 1):
-            for y in range(self.py_num + 1):
-                # soldan sağa olan çizgiler
-                pygame.draw.line(self.screen, color, (x * self.p_width, 0),
-                                 (x * self.p_width, self.height))
-                # yukarıdan aşağı doğru olan çizgiler
-                pygame.draw.line(self.screen, color, (0, y * self.p_height),
-                                 (self.width, y * self.p_height))
-
-    def __draw_edges(self):
-        for edge in self.edges:
-            rad = int((self.p_width + self.p_height) / 2 * (2 / 15))
-            pygame.draw.line(self.screen, colors.lime, edge.start_pos,
-                             edge.end_pos, 2)
-
-            pygame.draw.circle(self.screen, colors.turq, edge.start_pos, rad)
-            pygame.draw.circle(self.screen, colors.turq, edge.end_pos, rad)
-
-    def update(self):
-        self.__draw_nodes()
-
-        if self.draw_grid:
-            self.__draw_grid()
-        if self.draw_edges:
-            self.__draw_edges()
-
-    def set_node_state(self, pos, state):
-        self.nodes[pos].state = state
         self.__calc_edges()
 
     def __calc_edges(self):
@@ -191,7 +156,37 @@ class Board:
                         self.edges[left.edge_ids[DOWN]].ex += self.p_width
                         current_node.edge_ids[DOWN] = left.edge_ids[DOWN]
 
-        pass
+    def update(self):
+        self.__draw_nodes()
+
+        if self.draw_grid:
+            self.__draw_grid()
+        if self.draw_edges:
+            self.__draw_edges()
+
+    def __draw_nodes(self):
+        for x in range(self.px_num):
+            for y in range(self.py_num):
+                self.nodes[x, y].draw(self.screen)
+
+    def __draw_grid(self, color=colors.white):
+        for x in range(self.px_num + 1):
+            for y in range(self.py_num + 1):
+                # soldan sağa olan çizgiler
+                pygame.draw.line(self.screen, color, (x * self.p_width, 0),
+                                 (x * self.p_width, self.height))
+                # yukarıdan aşağı doğru olan çizgiler
+                pygame.draw.line(self.screen, color, (0, y * self.p_height),
+                                 (self.width, y * self.p_height))
+
+    def __draw_edges(self):
+        for edge in self.edges:
+            rad = int((self.p_width + self.p_height) / 2 * (2 / 15))
+            pygame.draw.line(self.screen, colors.lime, edge.start_pos,
+                             edge.end_pos, 2)
+
+            pygame.draw.circle(self.screen, colors.turq, edge.start_pos, rad)
+            pygame.draw.circle(self.screen, colors.turq, edge.end_pos, rad)
 
     def get_clicked_pos(self, mouse_pos):
         # x, y = ([i // self.p_width for i in mouse_pos])
@@ -201,6 +196,10 @@ class Board:
         y = (self.py_num - 1) if y > (self.py_num - 1) else y
 
         return x, y
+
+    def set_node_state(self, pos, state):
+        self.nodes[pos].state = state
+        self.__calc_edges()
 
     def __repr__(self):
         final = ""
