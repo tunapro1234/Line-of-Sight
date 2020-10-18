@@ -37,7 +37,7 @@ def runTime(board):
         if event.type == pygame.KEYDOWN:
             if event.key == pygame.K_SPACE:
                 board.toggle_switch()
-        
+
         if pygame.mouse.get_pressed()[0]:
             pos = board.get_clicked_pos(pygame.mouse.get_pos())
             board.set_node_state(pos, states.wall)
@@ -50,13 +50,13 @@ def runTime(board):
     return True
 
 
-def update(board, startTime, fps, *a, **kw):
+def update(board, start_time, fps, *a, **kw):
     board.update(*a, **kw)
-    # ekrana yazıldı
-    pygame.display.update()
     # fps düzenlemesi
-    while time() - startTime < (1 / fps):
+    while time() - start_time < (1 / fps):
         pass
+
+    pygame.display.update()
 
 
 if __name__ == "__main__":

@@ -5,6 +5,50 @@ import pygame
 import math
 
 
+class Ray:
+    # radius'un önemi yok çünkü biz zaten gönderdiğimiz rayi ışın olarak kabul ediyoruz
+    radius = 1000
+    count = 0
+
+    def __init__(self, m_pos, corner=None, angle=None):
+        self.corner = corner
+        self.m_pos = m_pos
+        self.count += 1
+
+        if angle:
+            self.rdx = math.cos(angle) * self.radius
+            self.rdy = math.sin(angle) * self.radius
+            self.angle = angle
+        elif corner:
+            self.rdx = corner[0] - m_pos[0]
+            self.rdy = corner[1] - m_pos[1]
+            self.angle = math.atan2(self.rdy, self.rdx)
+        else:
+            raise ValueError
+
+        self.start_pos = m_pos
+        self.end_pos = (self.rdx + m_pos[0], self.rdy + m_pos[1])
+
+    def create_neigbour_rays(self, offset=0.0001):
+        ray1 = Ray(self.m_pos, angle=(self.angle - offset))
+        ray3 = Ray(self.m_pos, angle=(self.angle + offset))
+
+        # internette gördüğüm algoritmalar direkt olarak köşeye gönderilen ışınları da
+        # hesaplıyor, fakat bunu yapmamız gerekmiyor çünkü zaten o köşenin kordinatlarına
+        # sahibiz visibility poligonunu çizereken köşeleri de ekleyebiliriz
+
+        return [ray1, self, ray3]
+        # return [ray1, ray3]
+
+    def check_intersection(self, edges):
+        for edge in edges:
+            return
+
+    @classmethod
+    def reset_count(cls):
+        cls.count = 0
+
+
 class Board:
     def __init__(self, screen, size, pixel_size, draw_grid=0, draw_edges=1):
         self.p_width, self.p_height = pixel_size
@@ -167,19 +211,19 @@ class Board:
             self.corners.append((edge.ex, edge.ey))
         self.corners = set(self.corners)
 
-    def __calc_rays(self, m_pos, radius=1000):
-        total = 0
+    def __calc_rays(self, m_pos, radius=500):
+        Ray.reset_count()
         for corner in self.corners:
-            rdx = corner[0] - m_pos[0]
-            rdy = corner[1] - m_pos[1]
-            # pygame.draw.line(self.screen, colors.white, m_pos,
-            #                  (rdx + m_pos[0], rdy + m_pos[1]))
-            total += 1
-            pygame.draw.line(self.screen, colors.white, m_pos,
-                                (rdx + m_pos[0], rdy + m_pos[1]))
+            # corner ile mouse pozisyouna çizgi çekip açısını alıyoruz
+            # daha sonra offseti ve hesapladığımız açıyı kullanarak köşe başına 3 tane ışık gönderiyoruz
+            # gönderdiğimiz ışığın bir yere çarpıp çarpmadığını hesaplayacağım birazdan
+            base_ray = Ray(m_pos, corner)
 
-        self.write(self.screen, f"Ray Count: {total}", (0, 0))
-        
+            for ray in base_ray.create_neigbour_rays():
+                pygame.draw.line(self.screen, colors.white, ray.start_pos,
+                                 ray.end_pos)
+
+        self.write(self.screen, f"Ray Count: {Ray.count}", (10, 10))
 
     @staticmethod
     def write(screen, msg, pos, font=16):
