@@ -1,5 +1,5 @@
 from setuptools import setup
 from Cython.Build import cythonize
 
-# setup(ext_modules=cythonize("test_cy.pyx", annotate=True))
-setup(ext_modules=cythonize("test.pyx", annotate=True))
+path = "lineofsight/lib/cython/"
+setup(ext_modules=cythonize(f"{path}ray_cy.pyx", annotate=True))

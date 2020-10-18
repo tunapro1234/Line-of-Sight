@@ -1,18 +1,18 @@
 from lineofsight.res.glob import *
 import math
 
+# radius'un önemi yok çünkü biz zaten gönderdiğimiz rayi ışın olarak kabul ediyoruz
+radius = 1
+
 
 class Ray:
-    # radius'un önemi yok çünkü biz zaten gönderdiğimiz rayi ışın olarak kabul ediyoruz
-    radius = 1000
-
     def __init__(self, m_pos, corner=None, angle=None):
         self.corner = corner
         self.m_pos = m_pos
 
         if angle:
-            self.rdx = math.cos(angle) * self.radius
-            self.rdy = math.sin(angle) * self.radius
+            self.rdx = math.cos(angle) * radius
+            self.rdy = math.sin(angle) * radius
             self.angle = angle
         elif corner:
             self.rdx = corner[0] - m_pos[0]

@@ -1,20 +1,18 @@
 from lineofsight.res.glob import *
 import math
 
+# radius'un önemi yok çünkü biz zaten gönderdiğimiz rayi ışın olarak kabul ediyoruz
+radius = 1
+
 
 class Ray:
-    # radius'un önemi yok çünkü biz zaten gönderdiğimiz rayi ışın olarak kabul ediyoruz
-    radius = 1000
-    count = 0
-
     def __init__(self, m_pos, corner=None, angle=None):
         self.corner = corner
         self.m_pos = m_pos
-        Ray.count += 1
 
         if angle:
-            self.rdx = math.cos(angle) * self.radius
-            self.rdy = math.sin(angle) * self.radius
+            self.rdx = math.cos(angle) * radius
+            self.rdy = math.sin(angle) * radius
             self.angle = angle
         elif corner:
             self.rdx = corner[0] - m_pos[0]
@@ -26,7 +24,7 @@ class Ray:
         self.start_pos = m_pos
         self.end_pos = (self.rdx + m_pos[0], self.rdy + m_pos[1])
 
-    def create_neigbour_rays(self, offset=0.0001):
+    def create_neigbour_rays(self, offset=0.001):
         ray1 = Ray(self.m_pos, angle=(self.angle - offset))
         ray3 = Ray(self.m_pos, angle=(self.angle + offset))
 
@@ -46,7 +44,9 @@ class Ray:
 
         # line - line intersection wikipedia:
         # https://en.wikipedia.org/wiki/Line%E2%80%93line_intersection
-
+        cpdef int x1, y1, x2, y2, x3, y3, x4, y4
+        cpdef float den, t, u
+        
         x1, y1 = edge.sx, edge.sy
         x2, y2 = edge.ex, edge.ey
 
@@ -66,7 +66,7 @@ class Ray:
             if 0 <= t <= 1 and 0 <= u:
                 return u
 
-    def calc_intersection(self, edges, *a, **kw):
+    def calc_intersection(self, edges):
         intersections = []
 
         x3, y3 = self.start_pos
@@ -74,7 +74,8 @@ class Ray:
 
         for edge in edges:
             # kesişim varsa listeye ekle
-            if (rv := self.__check_intersection(edge, *a, **kw)):
+            rv = self.__check_intersection(edge)
+            if rv:
                 # hepsini kaydediyorum çünkü hangisinin en yakın olacağını bilemeyiz
                 intersections.append(rv)
 
@@ -88,7 +89,3 @@ class Ray:
 
     def draw(self, pygame, screen, color=colors.white):
         pygame.draw.line(screen, color, self.start_pos, self.end_pos)
-
-    @classmethod
-    def reset_count(cls):
-        cls.count = 0

@@ -195,16 +195,19 @@ class Board:
         if len(rays) > 1:
             for i in range(len(rays) - 1):
                 # sırayla tüm raylerin arası çiziliyor
-                pygame.draw.polygon(
-                    self.screen, colors.gray,
-                    [m_pos, rays[i].end_pos, rays[i + 1].end_pos])
+                if DRAW_LIGHT:
+                    pygame.draw.polygon(
+                        self.screen, colors.gray,
+                        [m_pos, rays[i].end_pos, rays[i + 1].end_pos])
 
                 if DRAW_RAYS:
                     rays[i].draw(pygame, self.screen, colors.white)
 
             # en son ilk ve son ray birleştiriliyor
-            pygame.draw.polygon(self.screen, colors.gray,
-                                [m_pos, rays[-1].end_pos, rays[0].end_pos])
+            if DRAW_LIGHT:
+                pygame.draw.polygon(self.screen, colors.gray,
+                                    [m_pos, rays[-1].end_pos, rays[0].end_pos])
+
             if DRAW_RAYS:
                 rays[-1].draw(pygame, self.screen, colors.white)
 
@@ -249,7 +252,7 @@ class Board:
         for i, edge in enumerate(self.edges):
             if i < 4:
                 continue
-            
+
             rad = int((self.p_width + self.p_height) / 2 * (2 / 15))
             pygame.draw.line(self.screen, colors.lime, edge.start_pos,
                              edge.end_pos, 2)
