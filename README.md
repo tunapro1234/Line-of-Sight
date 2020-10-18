@@ -10,8 +10,6 @@ Sol klik blok koyuyor, sağ klik siliyor, space tuşu ışığı açıyor.
 **[pygame](https://pypi.org/project/pygame/) gerekli**
 
 # Kaynakça
-[The Coding Train Raycasting video](https://www.youtube.com/watch?v=TOEi6T2mtHo&t=1777s)
-
-[One Lone Coder Shadow Casting video](https://www.youtube.com/watch?v=fc3nnG2CG8U&t=2238s)
-
-[line - line intersection wikipedia](https://en.wikipedia.org/wiki/Line%E2%80%93line_intersection)
+  1. [The Coding Train Raycasting video](https://www.youtube.com/watch?v=TOEi6T2mtHo&t=1777s)
+  2. [One Lone Coder Shadow Casting video](https://www.youtube.com/watch?v=fc3nnG2CG8U&t=2238s)
+  3. [line - line intersection wikipedia](https://en.wikipedia.org/wiki/Line%E2%80%93line_intersection)
