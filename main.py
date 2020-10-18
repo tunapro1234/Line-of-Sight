@@ -5,6 +5,7 @@ import pygame
 
 
 def main():
+    pygame.init()
     pygame.display.init()
     pygame.display.set_caption(TITLE)
 
@@ -28,27 +29,29 @@ def main():
 
 def runTime(board):
     startTime = time()
+    m_pos = pygame.mouse.get_pos()
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             return False
 
+        if event.type == pygame.KEYDOWN:
+            if event.key == pygame.K_SPACE:
+                board.toggle_switch()
+        
         if pygame.mouse.get_pressed()[0]:
             pos = board.get_clicked_pos(pygame.mouse.get_pos())
             board.set_node_state(pos, states.wall)
-
-        elif pygame.mouse.get_pressed()[1]:
-            print("toggle")
 
         elif pygame.mouse.get_pressed()[2]:
             pos = board.get_clicked_pos(pygame.mouse.get_pos())
             board.set_node_state(pos, states.empty)
 
-    update(board, startTime, FPS)
+    update(board, startTime, FPS, m_pos)
     return True
 
 
-def update(board, startTime, fps):
-    board.update()
+def update(board, startTime, fps, *a, **kw):
+    board.update(*a, **kw)
     # ekrana yazıldı
     pygame.display.update()
     # fps düzenlemesi

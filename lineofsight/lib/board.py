@@ -1,8 +1,8 @@
 from lineofsight.lib.node import Node
 from lineofsight.lib.edge import Edge
 from lineofsight.res.glob import *
-import numpy as np
 import pygame
+import math
 
 
 class Board:
@@ -13,6 +13,7 @@ class Board:
         self.draw_edges = draw_edges
         self.draw_grid = draw_grid
         self.screen = screen
+        self.toggle = False
 
         self.py_num = self.height // self.p_height
         self.px_num = self.width // self.p_width
@@ -22,14 +23,15 @@ class Board:
     def __init_nodes(self):
         self.nodes = {}
         self.edges = []
+        self.corners = []
         for x in range(self.px_num):
             for y in range(self.py_num):
                 start_pos = (x * self.p_width, y * self.p_height)
                 state = 0
 
-                if (x in [1, self.px_num - 2] and 0 < y < self.py_num - 1) or (
-                        y in [1, self.py_num - 2] and 0 < x < self.px_num - 1):
-                    state = 1
+                # if (x in [1, self.px_num - 2] and 0 < y < self.py_num - 1) or (
+                #         y in [1, self.py_num - 2] and 0 < x < self.px_num - 1):
+                #     state = 1
 
                 self.nodes[x, y] = Node(state, start_pos, self.pixel_size)
 
@@ -43,6 +45,8 @@ class Board:
                 self.nodes[key].edge_ids[direction] = -1
 
         self.edges = []
+        self.corners = []
+
         edge_counter = 0
         for x in range(self.px_num):
             for y in range(self.py_num):
@@ -156,9 +160,42 @@ class Board:
                         self.edges[left.edge_ids[DOWN]].ex += self.p_width
                         current_node.edge_ids[DOWN] = left.edge_ids[DOWN]
 
-    def update(self):
+        # aynı köşeler kaldırılıyor (2 kat hızlanma)
+        self.corners = []
+        for edge in self.edges:
+            self.corners.append((edge.sx, edge.sy))
+            self.corners.append((edge.ex, edge.ey))
+        self.corners = set(self.corners)
+
+    def __calc_rays(self, m_pos, radius=1000):
+        total = 0
+        for corner in self.corners:
+            rdx = corner[0] - m_pos[0]
+            rdy = corner[1] - m_pos[1]
+            # pygame.draw.line(self.screen, colors.white, m_pos,
+            #                  (rdx + m_pos[0], rdy + m_pos[1]))
+            total += 1
+            pygame.draw.line(self.screen, colors.white, m_pos,
+                                (rdx + m_pos[0], rdy + m_pos[1]))
+
+        self.write(self.screen, f"Ray Count: {total}", (0, 0))
+        
+
+    @staticmethod
+    def write(screen, msg, pos, font=16):
+        font = pygame.font.Font('freesansbold.ttf', font)
+        text = font.render(msg, True, colors.white)
+
+        textRect = text.get_rect()
+        textRect.topleft = pos
+
+        screen.blit(text, textRect)
+
+    def update(self, m_pos=None):
         self.__draw_nodes()
 
+        if self.toggle and m_pos:
+            self.__calc_rays(m_pos)
         if self.draw_grid:
             self.__draw_grid()
         if self.draw_edges:
@@ -200,6 +237,10 @@ class Board:
     def set_node_state(self, pos, state):
         self.nodes[pos].state = state
         self.__calc_edges()
+
+    def toggle_switch(self):
+        # print("toggle")
+        self.toggle = bool(1 - self.toggle)
 
     def __repr__(self):
         final = ""
