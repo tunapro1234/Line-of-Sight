@@ -17,6 +17,12 @@ class Board:
 
         self.py_num = self.height // self.p_height
         self.px_num = self.width // self.p_width
+        self.empty_edges = [
+            Edge((0, 0), (WIDTH, 0)),
+            Edge((WIDTH, 0), (WIDTH, HEIGHT)),
+            Edge((WIDTH, HEIGHT), (0, HEIGHT)),
+            Edge((0, HEIGHT), (0, 0))
+        ]
 
         self.__init_nodes()
 
@@ -47,7 +53,7 @@ class Board:
         self.edges = []
         self.corners = []
 
-        edge_counter = 0
+        edge_counter = len(self.edges)
         for x in range(self.px_num):
             for y in range(self.py_num):
                 current_node = self.nodes[x, y]
@@ -173,7 +179,6 @@ class Board:
         # self.corners = [(500, 500), (600, 600)]
 
         rays = []
-        Ray.reset_count()
         for corner in self.corners:
             # corner ile mouse pozisyouna çizgi çekip açısını alıyoruz
             # daha sonra offseti ve hesapladığımız açıyı kullanarak köşe başına 3 tane ışık gönderiyoruz
@@ -182,9 +187,7 @@ class Board:
 
             for ray in base_ray.create_neigbour_rays():
                 ray.calc_intersection(self.edges)
-
                 rays.append(ray)
-                # ray.draw(self.screen, colors.gray)
 
             # açıya göre sıralıyorum
             rays.sort(key=lambda ray: ray.angle)
@@ -196,14 +199,16 @@ class Board:
                     self.screen, colors.gray,
                     [m_pos, rays[i].end_pos, rays[i + 1].end_pos])
 
-                # rays[i].draw(self.screen, colors.white)
+                if DRAW_RAYS:
+                    rays[i].draw(pygame, self.screen, colors.white)
 
             # en son ilk ve son ray birleştiriliyor
             pygame.draw.polygon(self.screen, colors.gray,
                                 [m_pos, rays[-1].end_pos, rays[0].end_pos])
-            # rays[-1].draw(self.screen, colors.white)
+            if DRAW_RAYS:
+                rays[-1].draw(pygame, self.screen, colors.white)
 
-        self.write(self.screen, f"Ray Count: {Ray.count}", (10, 10))
+        self.write(self.screen, f"Ray Count: {len(self.corners)*3}", (10, 10))
 
     @staticmethod
     def write(screen, msg, pos, font=16):

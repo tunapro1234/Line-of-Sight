@@ -5,10 +5,12 @@ import math
 class Ray:
     # radius'un önemi yok çünkü biz zaten gönderdiğimiz rayi ışın olarak kabul ediyoruz
     radius = 1000
+    count = 0
 
     def __init__(self, m_pos, corner=None, angle=None):
         self.corner = corner
         self.m_pos = m_pos
+        Ray.count += 1
 
         if angle:
             self.rdx = math.cos(angle) * self.radius
@@ -86,3 +88,7 @@ class Ray:
 
     def draw(self, pygame, screen, color=colors.white):
         pygame.draw.line(screen, color, self.start_pos, self.end_pos)
+
+    @classmethod
+    def reset_count(cls):
+        cls.count = 0
