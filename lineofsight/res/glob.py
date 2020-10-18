@@ -17,6 +17,7 @@ class colors:
     orange = (255, 69, 0)
     white = (255, 255, 255)
     green = (34, 139, 34)
+    gray = (128, 128, 128)
 
 
 class states:

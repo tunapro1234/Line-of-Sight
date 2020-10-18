@@ -1,93 +1,8 @@
 from lineofsight.lib.node import Node
 from lineofsight.lib.edge import Edge
+from lineofsight.lib.ray import Ray
 from lineofsight.res.glob import *
 import pygame
-import math
-
-
-class Ray:
-    # radius'un önemi yok çünkü biz zaten gönderdiğimiz rayi ışın olarak kabul ediyoruz
-    radius = 100000
-    count = 0
-
-    def __init__(self, m_pos, corner=None, angle=None):
-        self.corner = corner
-        self.m_pos = m_pos
-        Ray.count += 1
-
-        if angle:
-            self.rdx = math.cos(angle) * self.radius
-            self.rdy = math.sin(angle) * self.radius
-            self.angle = angle
-        elif corner:
-            self.rdx = corner[0] - m_pos[0]
-            self.rdy = corner[1] - m_pos[1]
-            self.angle = math.atan2(self.rdy, self.rdx)
-        else:
-            raise ValueError
-
-        self.start_pos = m_pos
-        self.end_pos = (self.rdx + m_pos[0], self.rdy + m_pos[1])
-
-    def create_neigbour_rays(self, offset=0.0001):
-        ray1 = Ray(self.m_pos, angle=(self.angle - offset))
-        ray3 = Ray(self.m_pos, angle=(self.angle + offset))
-
-        # internette gördüğüm algoritmalar direkt olarak köşeye gönderilen ışınları da
-        # hesaplıyor, fakat bunu yapmamız gerekmiyor çünkü zaten o köşenin kordinatlarına
-        # sahibiz visibility poligonunu çizereken köşeleri de ekleyebiliriz
-
-        return [ray1, self, ray3]
-        # return [ray1, ray3]
-
-    def __check_intersection(self, edge, *a, **kw):
-        # The Coding Train
-        # https://www.youtube.com/watch?v=TOEi6T2mtHo&t=1777s
-
-        x1, y1 = edge.sx, edge.sy
-        x2, y2 = edge.ex, edge.ey
-
-        x3, y3 = self.start_pos
-        x4, y4 = self.end_pos
-
-        den = (x1 - x2) * (y3 - y4) - (y1 - y2) * (x3 - x4)
-
-        if den:
-            # t edge için
-            # u ışın için
-
-            t = ((x1 - x3) * (y3 - y4) - (y1 - y3) * (x3 - x4)) / den
-            u = -((x1 - x2) * (y1 - y3) - (y1 - y2) * (x1 - x3)) / den
-
-            # print(f"t: {t}, u:{u}, if {0 <= t <= 1 and 0 <= u}")
-            if 0 <= t <= 1 and 0 <= u:
-                return u
-
-    def calc_intersection(self, edges, *a, **kw):
-        intersections = []
-
-        x3, y3 = self.start_pos
-        x4, y4 = self.end_pos
-
-        for edge in edges:
-            # kesişim varsa listeye ekle
-            if (rv := self.__check_intersection(edge, *a, **kw)):
-                intersections.append(rv)
-
-        # eğer kesişim varsa
-        if len(intersections) > 0:
-            #   ışık çarptıktan sonra ilerleyemediği için
-            # ilk çarptığı yeri bulup sonrasını boş vereceğiz
-            intersections.sort()
-            self.end_pos = (x3 + intersections[0] * (x4 - x3),
-                            y3 + intersections[0] * (y4 - y3))
-
-    def draw(self, screen, color=colors.white):
-        pygame.draw.line(screen, color, self.start_pos, self.end_pos)
-
-    @classmethod
-    def reset_count(cls):
-        cls.count = 0
 
 
 class Board:
@@ -114,9 +29,9 @@ class Board:
                 start_pos = (x * self.p_width, y * self.p_height)
                 state = 0
 
-                # if (x in [1, self.px_num - 2] and 0 < y < self.py_num - 1) or (
-                #         y in [1, self.py_num - 2] and 0 < x < self.px_num - 1):
-                #     state = 1
+                if (x in [1, self.px_num - 2] and 0 < y < self.py_num - 1) or (
+                        y in [1, self.py_num - 2] and 0 < x < self.px_num - 1):
+                    state = 1
 
                 self.nodes[x, y] = Node(state, start_pos, self.pixel_size)
 
@@ -257,6 +172,7 @@ class Board:
         # self.edges = [Edge((500, 500), (600, 600))]
         # self.corners = [(500, 500), (600, 600)]
 
+        rays = []
         Ray.reset_count()
         for corner in self.corners:
             # corner ile mouse pozisyouna çizgi çekip açısını alıyoruz
@@ -266,7 +182,26 @@ class Board:
 
             for ray in base_ray.create_neigbour_rays():
                 ray.calc_intersection(self.edges)
-                ray.draw(self.screen)
+
+                rays.append(ray)
+                # ray.draw(self.screen, colors.gray)
+
+            # açıya göre sıralıyorum
+            rays.sort(key=lambda ray: ray.angle)
+
+        if len(rays) > 1:
+            for i in range(len(rays) - 1):
+                # sırayla tüm raylerin arası çiziliyor
+                pygame.draw.polygon(
+                    self.screen, colors.gray,
+                    [m_pos, rays[i].end_pos, rays[i + 1].end_pos])
+
+                # rays[i].draw(self.screen, colors.white)
+
+            # en son ilk ve son ray birleştiriliyor
+            pygame.draw.polygon(self.screen, colors.gray,
+                                [m_pos, rays[-1].end_pos, rays[0].end_pos])
+            # rays[-1].draw(self.screen, colors.white)
 
         self.write(self.screen, f"Ray Count: {Ray.count}", (10, 10))
 
