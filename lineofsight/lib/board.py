@@ -6,6 +6,13 @@ import pygame
 
 
 class Board:
+    empty_edges = tuple([
+        Edge((0, 0), (WIDTH, 0)),
+        Edge((WIDTH, 0), (WIDTH, HEIGHT)),
+        Edge((WIDTH, HEIGHT), (0, HEIGHT)),
+        Edge((0, HEIGHT), (0, 0))
+    ])
+
     def __init__(self, screen, size, pixel_size, draw_grid=0, draw_edges=1):
         self.p_width, self.p_height = pixel_size
         self.width, self.height = size
@@ -17,27 +24,20 @@ class Board:
 
         self.py_num = self.height // self.p_height
         self.px_num = self.width // self.p_width
-        self.empty_edges = [
-            Edge((0, 0), (WIDTH, 0)),
-            Edge((WIDTH, 0), (WIDTH, HEIGHT)),
-            Edge((WIDTH, HEIGHT), (0, HEIGHT)),
-            Edge((0, HEIGHT), (0, 0))
-        ]
 
         self.__init_nodes()
 
     def __init_nodes(self):
         self.nodes = {}
-        self.edges = []
-        self.corners = []
+
         for x in range(self.px_num):
             for y in range(self.py_num):
                 start_pos = (x * self.p_width, y * self.p_height)
                 state = 0
 
-                if (x in [1, self.px_num - 2] and 0 < y < self.py_num - 1) or (
-                        y in [1, self.py_num - 2] and 0 < x < self.px_num - 1):
-                    state = 1
+                # if (x in [1, self.px_num - 2] and 0 < y < self.py_num - 1) or (
+                #         y in [1, self.py_num - 2] and 0 < x < self.px_num - 1):
+                #     state = 1
 
                 self.nodes[x, y] = Node(state, start_pos, self.pixel_size)
 
@@ -50,8 +50,8 @@ class Board:
             for direction in directions:
                 self.nodes[key].edge_ids[direction] = -1
 
-        self.edges = []
-        self.corners = []
+        self.edges = list(self.empty_edges)
+        # print(len(self.edges))
 
         edge_counter = len(self.edges)
         for x in range(self.px_num):
@@ -246,7 +246,10 @@ class Board:
                                  (self.width, y * self.p_height))
 
     def __draw_edges(self):
-        for edge in self.edges:
+        for i, edge in enumerate(self.edges):
+            if i < 4:
+                continue
+            
             rad = int((self.p_width + self.p_height) / 2 * (2 / 15))
             pygame.draw.line(self.screen, colors.lime, edge.start_pos,
                              edge.end_pos, 2)
