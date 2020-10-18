@@ -13,7 +13,7 @@ class Ray:
     def __init__(self, m_pos, corner=None, angle=None):
         self.corner = corner
         self.m_pos = m_pos
-        self.count += 1
+        Ray.count += 1
 
         if angle:
             self.rdx = math.cos(angle) * self.radius
@@ -40,9 +40,38 @@ class Ray:
         return [ray1, self, ray3]
         # return [ray1, ray3]
 
-    def check_intersection(self, edges):
-        for edge in edges:
-            return
+    def __check_intersection(self, edge, *a, **kw):
+        # The Coding Train
+        # https://www.youtube.com/watch?v=TOEi6T2mtHo&t=1777s
+
+        x1, y1 = edge.sx, edge.sy
+        x2, y2 = edge.ex, edge.ey
+
+        x3, y3 = self.start_pos
+        x4, y4 = self.end_pos
+
+        den = (x1 - x2) * (y3 - y4) - (y1 - y2) * (x3 - x4)
+
+        if den:
+            # t edge için
+            # u ışın için
+
+            t = ((x1 - x3) * (y3 - y4) - (y1 - y3) * (x3 - x4)) / den
+            u = -((x1 - x2) * (y1 - y3) - (y1 - y2) * (x1 - x3)) / den
+
+            print(f"t: {t}, u:{u}, if {0 <= t <= 1 and 0 <= u}")
+            if 0 <= t <= 1 and 0 <= u:
+                return True
+
+    def check_intersection(self, edges, *a, **kw):
+        final = []
+        for i, edge in enumerate(edges):
+            rv = self.__check_intersection(edge, *a, **kw)
+            final.append(rv)
+        return final
+
+    def draw(self, screen):
+        pygame.draw.line(screen, colors.white, self.start_pos, self.end_pos)
 
     @classmethod
     def reset_count(cls):
@@ -212,6 +241,10 @@ class Board:
         self.corners = set(self.corners)
 
     def __calc_rays(self, m_pos, radius=500):
+        # test için
+        self.edges = [Edge((500, 500), (600, 600))]
+        self.corners = [(500, 500), (600, 600)]
+
         Ray.reset_count()
         for corner in self.corners:
             # corner ile mouse pozisyouna çizgi çekip açısını alıyoruz
@@ -219,9 +252,12 @@ class Board:
             # gönderdiğimiz ışığın bir yere çarpıp çarpmadığını hesaplayacağım birazdan
             base_ray = Ray(m_pos, corner)
 
-            for ray in base_ray.create_neigbour_rays():
-                pygame.draw.line(self.screen, colors.white, ray.start_pos,
-                                 ray.end_pos)
+            # for ray in base_ray.create_neigbour_rays():
+            base_ray.draw(self.screen)
+            rv = base_ray.check_intersection(self.edges)
+            # print(rv, end=" ")
+
+        # print()
 
         self.write(self.screen, f"Ray Count: {Ray.count}", (10, 10))
 
