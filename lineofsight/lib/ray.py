@@ -28,10 +28,6 @@ class Ray:
         ray1 = Ray(self.m_pos, angle=(self.angle - offset))
         ray3 = Ray(self.m_pos, angle=(self.angle + offset))
 
-        # internette gördüğüm algoritmalar direkt olarak köşeye gönderilen ışınları da
-        # hesaplıyor, fakat bunu yapmamız gerekmiyor çünkü zaten o köşenin kordinatlarına
-        # sahibiz visibility poligonunu çizereken köşeleri de ekleyebiliriz
-
         return [ray1, self, ray3]
         # return [ray1, ray3]
 
