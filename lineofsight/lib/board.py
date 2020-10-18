@@ -7,7 +7,7 @@ import math
 
 class Ray:
     # radius'un önemi yok çünkü biz zaten gönderdiğimiz rayi ışın olarak kabul ediyoruz
-    radius = 1000
+    radius = 100000
     count = 0
 
     def __init__(self, m_pos, corner=None, angle=None):
@@ -59,19 +59,31 @@ class Ray:
             t = ((x1 - x3) * (y3 - y4) - (y1 - y3) * (x3 - x4)) / den
             u = -((x1 - x2) * (y1 - y3) - (y1 - y2) * (x1 - x3)) / den
 
-            print(f"t: {t}, u:{u}, if {0 <= t <= 1 and 0 <= u}")
+            # print(f"t: {t}, u:{u}, if {0 <= t <= 1 and 0 <= u}")
             if 0 <= t <= 1 and 0 <= u:
-                return True
+                return u
 
-    def check_intersection(self, edges, *a, **kw):
-        final = []
-        for i, edge in enumerate(edges):
-            rv = self.__check_intersection(edge, *a, **kw)
-            final.append(rv)
-        return final
+    def calc_intersection(self, edges, *a, **kw):
+        intersections = []
 
-    def draw(self, screen):
-        pygame.draw.line(screen, colors.white, self.start_pos, self.end_pos)
+        x3, y3 = self.start_pos
+        x4, y4 = self.end_pos
+
+        for edge in edges:
+            # kesişim varsa listeye ekle
+            if (rv := self.__check_intersection(edge, *a, **kw)):
+                intersections.append(rv)
+
+        # eğer kesişim varsa
+        if len(intersections) > 0:
+            #   ışık çarptıktan sonra ilerleyemediği için
+            # ilk çarptığı yeri bulup sonrasını boş vereceğiz
+            intersections.sort()
+            self.end_pos = (x3 + intersections[0] * (x4 - x3),
+                            y3 + intersections[0] * (y4 - y3))
+
+    def draw(self, screen, color=colors.white):
+        pygame.draw.line(screen, color, self.start_pos, self.end_pos)
 
     @classmethod
     def reset_count(cls):
@@ -242,8 +254,8 @@ class Board:
 
     def __calc_rays(self, m_pos, radius=500):
         # test için
-        self.edges = [Edge((500, 500), (600, 600))]
-        self.corners = [(500, 500), (600, 600)]
+        # self.edges = [Edge((500, 500), (600, 600))]
+        # self.corners = [(500, 500), (600, 600)]
 
         Ray.reset_count()
         for corner in self.corners:
@@ -252,12 +264,9 @@ class Board:
             # gönderdiğimiz ışığın bir yere çarpıp çarpmadığını hesaplayacağım birazdan
             base_ray = Ray(m_pos, corner)
 
-            # for ray in base_ray.create_neigbour_rays():
-            base_ray.draw(self.screen)
-            rv = base_ray.check_intersection(self.edges)
-            # print(rv, end=" ")
-
-        # print()
+            for ray in base_ray.create_neigbour_rays():
+                ray.calc_intersection(self.edges)
+                ray.draw(self.screen)
 
         self.write(self.screen, f"Ray Count: {Ray.count}", (10, 10))
 
