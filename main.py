@@ -9,12 +9,9 @@ def main():
     pygame.display.init()
     pygame.display.set_caption(TITLE)
 
-    screen_size = (WIDTH + 1, HEIGHT + 1) if DRAW_GRID else (WIDTH, HEIGHT)
-
-    if FULLSCREEN:
-        screen = pygame.display.set_mode(screen_size, pygame.FULLSCREEN)
-    else:
-        screen = pygame.display.set_mode(screen_size)
+    scr_size = (WIDTH + 1, HEIGHT + 1) if DRAW_GRID else (WIDTH, HEIGHT)
+    scr_args = (scr_size, pygame.FULLSCREEN) if FULLSCREEN else (scr_size, ) 
+    screen = pygame.display.set_mode(*scr_args)
 
     # def __init__(self, screen, size, pixelWidth, drawGrid=0):
     board = Board(screen, (WIDTH, HEIGHT), (PIXEL_WIDTH, PIXEL_HEIGHT),
